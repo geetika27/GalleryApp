@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.dsrise.kotlinkoin.R
@@ -77,14 +78,32 @@ class ImageViewAdapter(val list: List<ImageDetail>, val itemClickListener: ItemC
         if (MYLRUCache.getBitmapFromCache(url) != null) {
             ivImage.setImageBitmap(MYLRUCache.getBitmapFromCache(url))
         } else {
-            HttpImageReqTask(object : ImageHelper {
-                override fun onImageDownload(result: Bitmap?) {
 
-                    MYLRUCache.addBitmapToCache(url, result!!)
-                    ivImage.setImageBitmap(result)
-                }
-            }).execute(url)
+
+            try {
+                HttpImageReqTask(object : ImageHelper {
+                    override fun onImageDownload(result: Bitmap?) {
+                        try {
+                            MYLRUCache.addBitmapToCache(url, result!!)
+                            ivImage.setImageBitmap(result)
+                        } catch (e: Exception) {
+                            Toast.makeText(
+                                ivImage.context,
+                                "Error: Internet Connection Not Working <> ${e.message}",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    }
+                }).execute(url)
+            } catch (e: Exception) {
+                Toast.makeText(
+                    ivImage.context,
+                    "Error: Internet Connection Not Working",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
         }
+
     }
 
 

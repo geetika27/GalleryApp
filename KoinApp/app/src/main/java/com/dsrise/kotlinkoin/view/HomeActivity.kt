@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.View
 import android.view.Window
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import com.dsrise.kotlinkoin.R
@@ -55,15 +56,32 @@ class HomeActivity : AppCompatActivity() {
             ivImage.setImageBitmap(MYLRUCache.getBitmapFromCache(url))
         } else {
             setPbVisibility(true)
-            HttpImageReqTask(object : ImageHelper {
-                override fun onImageDownload(result: Bitmap?) {
 
-                    MYLRUCache.addBitmapToCache(url, result!!)
-                    ivImage.setImageBitmap(result)
-                    setPbVisibility(false)
-                }
-            }).execute(url)
+            try {
+                HttpImageReqTask(object : ImageHelper {
+                    override fun onImageDownload(result: Bitmap?) {
+                        try {
+                            MYLRUCache.addBitmapToCache(url, result!!)
+                            ivImage.setImageBitmap(result)
+                            setPbVisibility(false)
+                        } catch (e: Exception) {
+                            Toast.makeText(
+                                ivImage.context,
+                                "Error: Internet Connection Not Working <> ${e.message}",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    }
+                }).execute(url)
+            } catch (e: Exception) {
+                Toast.makeText(
+                    ivImage.context,
+                    "Error: Internet Connection Not Working",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
         }
+
     }
 
     internal class HttpImageReqTask(imageHelper: ImageHelper) :
